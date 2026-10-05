@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carrito — BloomHair</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .cart-page { padding: 140px 0 80px; background: #FBF7EE; min-height: 60vh; }
+    .cart-wrap { max-width: 980px; margin: 0 auto; padding: 0 24px; }
+    .cart-title { font-family: 'Cormorant Garamond', serif; font-size: 48px; color: #1B1210; margin-bottom: 8px; }
+    .cart-sub { color: #6a5a4a; margin-bottom: 40px; font-size: 14px; letter-spacing: .05em; }
+    .cart-empty { text-align: center; padding: 60px 20px; }
+    .cart-empty p { color: #6a5a4a; margin-bottom: 24px; }
+    .cart-grid { display: grid; grid-template-columns: 1fr 340px; gap: 40px; align-items: start; }
+    @media (max-width: 780px) { .cart-grid { grid-template-columns: 1fr; } }
+    .cart-items { background: #fff; padding: 24px; }
+    .cart-item { display: grid; grid-template-columns: 90px 1fr auto; gap: 20px; padding: 20px 0; border-bottom: 1px solid #eadfcf; align-items: center; }
+    .cart-item:last-child { border-bottom: none; }
+    .cart-item img { width: 90px; height: 110px; object-fit: cover; }
+    .ci-name { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: #1B1210; margin-bottom: 4px; }
+    .ci-price { color: #8B5A3C; font-weight: 600; }
+    .ci-qty { display: inline-flex; align-items: center; margin-top: 10px; border: 1px solid #d9c9b1; }
+    .ci-qty button { width: 32px; height: 32px; border: none; background: transparent; cursor: pointer; font-size: 18px; color: #1B1210; }
+    .ci-qty span { min-width: 32px; text-align: center; font-size: 14px; }
+    .ci-remove { background: transparent; border: none; color: #8B5A3C; font-size: 11px; letter-spacing: .18em; cursor: pointer; margin-top: 8px; padding: 0; }
+    .ci-total { font-family: 'Cormorant Garamond', serif; font-size: 24px; color: #1B1210; }
+    .summary { background: #1B1210; color: #F5EFDF; padding: 32px; position: sticky; top: 120px; }
+    .summary h3 { font-family: 'Cormorant Garamond', serif; font-size: 28px; margin-bottom: 24px; letter-spacing: .04em; }
+    .sum-row { display: flex; justify-content: space-between; padding: 10px 0; font-size: 14px; color: #c4b8a3; }
+    .sum-total { display: flex; justify-content: space-between; padding: 18px 0 24px; border-top: 1px solid #c9a97a; margin-top: 14px; font-family: 'Cormorant Garamond', serif; font-size: 26px; color: #F5EFDF; }
+    .pay-btn { width: 100%; background: #c9a97a; color: #1B1210; border: none; padding: 16px; font-size: 12px; letter-spacing: .28em; cursor: pointer; font-weight: 600; }
+    .pay-btn:hover { background: #b8955f; }
+    .pay-btn:disabled { opacity: .6; cursor: wait; }
+    .secure { text-align: center; margin-top: 14px; font-size: 11px; color: #c4b8a3; letter-spacing: .12em; }
+    .secure svg { vertical-align: middle; margin-right: 6px; }
+  </style>
+</head>
+<body>
+  <header class="header" id="site-header"></header>
+
+  <main class="cart-page">
+    <div class="cart-wrap">
+      <p class="eyebrow">TU CARRITO</p>
+      <h1 class="cart-title">Revisa tu pedido</h1>
+      <p class="cart-sub">Pago 100% seguro con Stripe · Envío 24-72h península</p>
+      <div id="cartRoot"></div>
+    </div>
+  </main>
+
+  <footer class="footer" id="site-footer"></footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/cart.js"></script>
+  <script>
+    function render() {
+      const items = BHCart.read();
+      const root = document.getElementById('cartRoot');
+      if (!items.length) {
+        root.innerHTML = `
+          <div class="cart-empty">
+            <p style="font-family:'Cormorant Garamond',serif;font-size:26px;color:#1B1210">Tu carrito está vacío</p>
+            <p>Descubre nuestras extensiones premium de cabello 100% Remy.</p>
+            <a href="shop.html" class="btn btn-primary" style="margin-top:20px">EXPLORAR CATÁLOGO</a>
+          </div>`;
+        return;
+      }
+      const subtotal = BHCart.subtotal();
+      root.innerHTML = `
+        <div class="cart-grid">
+          <div class="cart-items">
+            ${items.map(it => `
+              <div class="cart-item" data-sku="${it.sku}">
+                <img src="${it.image}" alt="${it.name}">
+                <div>
+                  <div class="ci-name">${it.name}</div>
+                  <div class="ci-price">${it.price}€ / unidad</div>
+                  <div class="ci-qty">
+                    <button data-act="dec" aria-label="Quitar">−</button>
+                    <span>${it.quantity}</span>
+                    <button data-act="inc" aria-label="Añadir">+</button>
+                  </div>
+                  <div><button class="ci-remove" data-act="rm">ELIMINAR</button></div>
+                </div>
+                <div class="ci-total">${(it.price * it.quantity).toFixed(2)}€</div>
+              </div>
+            `).join('')}
+          </div>
+          <aside class="summary">
+            <h3>Resumen</h3>
+            <div class="sum-row"><span>Subtotal</span><span>${subtotal.toFixed(2)}€</span></div>
+            <div class="sum-row"><span>Envío</span><span>Gratis</span></div>
+            <div class="sum-row" style="font-size:12px;color:#8a7960">IVA incluido</div>
+            <div class="sum-total"><span>Total</span><span>${subtotal.toFixed(2)}€</span></div>
+            <button class="pay-btn" id="payBtn" data-testid="checkout-pay-button">PAGAR CON TARJETA</button>
+            <p class="secure">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              PAGO SEGURO · STRIPE
+            </p>
+          </aside>
+        </div>
+      `;
+
+      document.querySelectorAll('.cart-item').forEach(el => {
+        const sku = el.dataset.sku;
+        const item = items.find(i => i.sku === sku);
+        el.querySelector('[data-act="inc"]').onclick = () => { BHCart.setQuantity(sku, item.quantity + 1); render(); };
+        el.querySelector('[data-act="dec"]').onclick = () => { BHCart.setQuantity(sku, item.quantity - 1); render(); };
+        el.querySelector('[data-act="rm"]').onclick = () => { BHCart.remove(sku); render(); };
+      });
+
+      document.getElementById('payBtn').onclick = async () => {
+        const btn = document.getElementById('payBtn');
+        btn.disabled = true;
+        btn.textContent = 'REDIRIGIENDO A STRIPE...';
+        await BHCart.checkout();
+        btn.disabled = false;
+        btn.textContent = 'PAGAR CON TARJETA';
+      };
+    }
+
+    document.addEventListener('DOMContentLoaded', render);
+    window.addEventListener('bh:cart-change', render);
+  </script>
+</body>
+</html>

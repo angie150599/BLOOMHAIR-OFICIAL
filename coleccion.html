@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Colección — BloomHair</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+  <div class="mobile-drawer" id="mobile-drawer"></div>
+
+  <main id="catRoot"></main>
+
+  <footer class="footer" id="site-footer"></footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/cart.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const params = new URLSearchParams(location.search);
+      const slug = params.get('slug') || 'genius-weft';
+      const cat = BH.categories.find(c => c.slug === slug);
+      if (!cat) { location.href = 'index.html'; return; }
+      const media = BH.categoryMedia[slug] || {};
+      const colors = BH.helpers.colorsFor(slug);
+      document.title = cat.name + ' — BloomHair';
+
+      const gallery = media.photos ? `
+        <div class="pgallery">
+          <div class="pgallery-main"><img id="pgMain" src="${media.photos[0]}" alt="${cat.name}"></div>
+          <div class="pgallery-thumbs count-${media.photos.length}" id="pgThumbs">
+            ${media.photos.map((p,i) => `<button class="pgallery-thumb ${i===0?'active':''}" data-src="${p}"><img src="${p}" alt="Vista ${i+1}"></button>`).join('')}
+          </div>
+        </div>
+      ` : `<div class="two-col-img zoom"><img src="${cat.image}" alt="${cat.name}"></div>`;
+
+      const lifestyleSection = media.lifestyle ? `
+        <section class="section section-cream">
+          <div class="container-sm">
+            <div class="two-col">
+              <div class="two-col-img zoom" style="max-width:520px;margin:0 auto"><img src="${media.lifestyle}" alt="Resultado real"></div>
+              <div>
+                <p class="eyebrow">RESULTADOS REALES</p>
+                <h2 class="section-title-sm">Longitud, volumen<br>y brillo natural</h2>
+                <p style="color:#3a2e24;margin-top:20px;line-height:1.6">Nuestras extensiones se integran perfectamente con tu cabello para conseguir un acabado impecable, ligero y de larga duración. Cabello 100% Remy con cutícula alineada.</p>
+                <ul>
+                  <li>Cortina ultra fina, imperceptible al tacto.</li>
+                  <li>Se puede cortar sin deshilacharse.</li>
+                  <li>Compatible con todo tipo de instalación.</li>
+                  <li>Reutilizable hasta 12 meses con el cuidado adecuado.</li>
+                </ul>
+                <div style="margin-top:32px"><a class="btn btn-outline" href="galeria.html">VER MÁS RESULTADOS</a></div>
+              </div>
+            </div>
+          </div>
+        </section>` : '';
+
+      document.getElementById('catRoot').innerHTML = `
+        <section class="cat-hero">
+          <div class="cat-hero-grid">
+            <div>
+              <nav class="breadcrumb"><a href="index.html">INICIO</a> / <a href="shop.html">HAIR EXTENSIONS</a> / <span style="color:#1B1210">${cat.name.toUpperCase()}</span></nav>
+              <h1 class="cat-hero-title">${cat.name}</h1>
+              <p class="cat-hero-sub">${cat.subtitle}</p>
+              <p class="cat-hero-desc">${cat.description}</p>
+              <div class="cat-hero-stats">
+                <div><p>CANTIDAD</p><p>50gr</p></div>
+                <div><p>UNIDADES</p><p>20 uds</p></div>
+                <div><p>LONGITUDES</p><p>50 / 70 cm</p></div>
+              </div>
+            </div>
+            ${gallery}
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="container">
+            <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:40px;flex-wrap:wrap;gap:12px">
+              <div>
+                <p class="eyebrow">TONOS DISPONIBLES</p>
+                <h2 class="section-title-sm">Elige tu tono</h2>
+              </div>
+              <p style="color:#6a5a4a">${colors.length} tonos disponibles</p>
+            </div>
+            <div class="prod-grid" id="prodGrid"></div>
+            <p class="text-center" style="margin-top:48px;font-size:12px;letter-spacing:.28em;color:#8B5A3C">MÁS TONOS PRÓXIMAMENTE</p>
+          </div>
+        </section>
+
+        ${lifestyleSection}
+
+        <section class="info-strip">
+          <div class="info-grid">
+            <div><h4>100% Cabello Remy</h4><p>Cutícula alineada, calidad premium.</p></div>
+            <div><h4>Envío rápido</h4><p>24-72h en península.</p></div>
+            <div><h4>Atención pro</h4><p>Soporte personalizado para estilistas.</p></div>
+          </div>
+        </section>
+
+        <section class="section" style="background:#FBF7EE">
+          <div class="container-sm" id="reviewsRoot" data-slug="${slug}" data-name="${cat.name}"></div>
+        </section>
+
+        <section class="section">
+          <div class="container">
+            <h3 class="section-title-sm" style="margin-bottom:32px">Explora más colecciones</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px" id="otherCats"></div>
+          </div>
+        </section>
+      `;
+
+      // Products grid
+      document.getElementById('prodGrid').innerHTML = colors.map(color => `
+        <div class="prod-card" data-slug="${color.slug}">
+          <div class="prod-img"><img src="${color.image}" alt="${color.name}"></div>
+          <div class="prod-body">
+            <div class="stars">${'★'.repeat(5).split('').map(s => `<span style="color:#c69a5a">★</span>`).join('')}<span>(nuevo)</span></div>
+            <h3 class="prod-name">${color.name}</h3>
+            <p class="prod-desc">${color.description}</p>
+            <p class="size-label">LONGITUD</p>
+            <div class="size-buttons">
+              ${color.variants.map((v,i) => `<button class="size-btn ${i===0?'active':''}" data-idx="${i}">${v.size}</button>`).join('')}
+            </div>
+            <div class="prod-footer">
+              <div>
+                <p class="prod-weight">${color.variants[0].weight}</p>
+                <p class="prod-price">${color.variants[0].price}€</p>
+              </div>
+              <button class="btn btn-dark btn-sm add-cart">AÑADIR</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      // Product interactions
+      document.querySelectorAll('.prod-card').forEach(card => {
+        const s = card.dataset.slug;
+        const color = colors.find(c => c.slug === s);
+        card.querySelectorAll('.size-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            card.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const idx = +btn.dataset.idx;
+            card.querySelector('.prod-weight').textContent = color.variants[idx].weight;
+            card.querySelector('.prod-price').textContent = color.variants[idx].price + '€';
+          });
+        });
+        card.querySelector('.add-cart').addEventListener('click', () => {
+          const active = card.querySelector('.size-btn.active');
+          const idx = +active.dataset.idx;
+          const variant = color.variants[idx];
+          const lengthCm = variant.size.replace(/\D/g, '');
+          const sku = `${slug}__${color.slug}__${lengthCm}`;
+          BHCart.add({
+            sku,
+            name: `${cat.name} · ${color.name} · ${variant.size}`,
+            price: variant.price,
+            image: color.image,
+            category: slug,
+            color: color.slug,
+            size: variant.size,
+            quantity: 1,
+          });
+          BH.toast('Añadido al carrito', `${color.name} · ${variant.size} · ${variant.price}€`);
+        });
+      });
+
+      // Product gallery thumbs
+      const pgMain = document.getElementById('pgMain');
+      if (pgMain) {
+        document.querySelectorAll('.pgallery-thumb').forEach(t => {
+          t.addEventListener('click', () => {
+            document.querySelectorAll('.pgallery-thumb').forEach(x => x.classList.remove('active'));
+            t.classList.add('active');
+            pgMain.src = t.dataset.src;
+          });
+        });
+      }
+
+      // Other categories
+      document.getElementById('otherCats').innerHTML = BH.categories.filter(c => c.slug !== slug).map(c => `
+        <a href="coleccion.html?slug=${c.slug}" style="display:flex;gap:24px;background:#F2EAD3;padding:16px;align-items:center;transition:transform .5s" onmouseenter="this.style.transform='translateY(-6px)'" onmouseleave="this.style.transform='translateY(0)'">
+          <div style="width:144px;height:144px;overflow:hidden;flex-shrink:0"><img src="${c.image}" alt="${c.name}" style="width:100%;height:100%;object-fit:cover"></div>
+          <div style="flex:1">
+            <p style="font-size:10px;letter-spacing:.3em;color:#8B5A3C;margin-bottom:4px">HAIR EXTENSIONS</p>
+            <h4 class="font-serif" style="font-size:22px;color:#1B1210">${c.name}</h4>
+            <p style="font-size:14px;color:#6a5a4a;margin-top:4px">${c.subtitle}</p>
+          </div>
+          <span style="color:#3a2e24">›</span>
+        </a>
+      `).join('');
+
+      // Reviews section
+      buildReviews(slug, cat.name);
+    });
+
+    function buildReviews(slug, catName) {
+      const key = `bloomhair_reviews_${slug}`;
+      const seed = BH.reviews.filter(r => r.category === slug);
+      const local = JSON.parse(localStorage.getItem(key) || '[]');
+      let reviews = [...local, ...seed];
+
+      function render() {
+        const avg = reviews.length ? (reviews.reduce((s,r) => s+r.rating, 0) / reviews.length).toFixed(1) : 0;
+        const filledStars = Math.round(avg);
+        const starsHtml = [1,2,3,4,5].map(i => `<span style="color:#c69a5a;font-size:18px">${i<=filledStars?'★':'☆'}</span>`).join('');
+
+        document.getElementById('reviewsRoot').innerHTML = `
+          <div class="reviews-header">
+            <div>
+              <p class="eyebrow">OPINIONES</p>
+              <h2 class="section-title-sm">Lo que dicen de ${catName}</h2>
+              <div class="rev-avg">${starsHtml}<span class="rev-avg-num">${avg}</span><span class="rev-count">(${reviews.length} opiniones)</span></div>
+            </div>
+            <button class="btn btn-dark btn-sm" id="toggleRev">DEJAR UNA OPINIÓN</button>
+          </div>
+          <form class="rev-form hidden" id="revForm" action="https://formspree.io/f/xeaokvpb" method="POST">
+            <input type="hidden" name="_subject" value="Nueva opinión BloomHair">
+            <input type="hidden" name="categoria" id="revCatField" value="">
+            <input type="text" name="_gotcha" style="display:none">
+            <div class="rev-form-grid">
+              <div class="rev-field"><label>TU NOMBRE</label><input required name="name"></div>
+              <div class="rev-field"><label>CIUDAD (opcional)</label><input name="location"></div>
+              <div class="rev-field"><label>PRODUCTO / TONO</label><input name="product" placeholder="ej: Malibu Sand 50 cm"></div>
+              <div class="rev-field"><label>TU VALORACIÓN</label>
+                <div class="rating-picker" id="ratingPicker">
+                  ${[1,2,3,4,5].map(n => `<button type="button" data-n="${n}">${n<=5?'★':'☆'}</button>`).join('')}
+                </div>
+              </div>
+            </div>
+            <div class="rev-field" style="margin-bottom:16px"><label>TÍTULO</label><input name="title" placeholder="Resumen de tu experiencia"></div>
+            <div class="rev-field" style="margin-bottom:16px"><label>TU OPINIÓN</label><textarea required name="comment" placeholder="Cuéntanos qué tal ha sido tu experiencia con BloomHair..."></textarea></div>
+            <button class="btn btn-sm" type="submit" style="background:#8B5A3C;color:#F5EFDF">PUBLICAR OPINIÓN</button>
+          </form>
+          <div class="rev-grid">
+            ${reviews.map(r => `
+              <div class="review-card">
+                <div class="rev-head">
+                  <div><p class="rev-name">${r.name}</p>${r.location ? `<p class="rev-loc">${r.location}</p>` : ''}</div>
+                  <div class="stars">${[1,2,3,4,5].map(i => `<span style="color:#c69a5a">${i<=r.rating?'★':'☆'}</span>`).join('')}</div>
+                </div>
+                ${r.title ? `<h4 class="rev-title">${r.title}</h4>` : ''}
+                <p class="rev-comment">“${r.comment}”</p>
+                <div class="rev-foot">${r.product ? `<i>${r.product}</i>` : '<span></span>'}<span>△ ${r.date || 'Cliente verificada'}</span></div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+
+        // Toggle form
+        const form = document.getElementById('revForm');
+        document.getElementById('toggleRev').addEventListener('click', () => form.classList.toggle('hidden'));
+
+        // Rating picker
+        let rating = 5;
+        document.querySelectorAll('#ratingPicker button').forEach(b => {
+          b.addEventListener('click', () => {
+            rating = +b.dataset.n;
+            document.querySelectorAll('#ratingPicker button').forEach(x => {
+              x.textContent = +x.dataset.n <= rating ? '★' : '☆';
+            });
+          });
+        });
+
+        // Submit
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const fd = new FormData(form);
+          fd.set('categoria', catName);
+          fd.set('rating', rating);
+          const newRev = {
+            id: 'local_' + Date.now(),
+            name: fd.get('name'),
+            location: fd.get('location'),
+            product: fd.get('product'),
+            title: fd.get('title'),
+            comment: fd.get('comment'),
+            rating: rating,
+            date: 'Hace unos segundos',
+            category: slug,
+          };
+          const updated = [newRev, ...JSON.parse(localStorage.getItem(key) || '[]')];
+          localStorage.setItem(key, JSON.stringify(updated));
+          reviews = [newRev, ...reviews];
+          // Send to Formspree (fire-and-forget, no UI block)
+          fetch(form.action, { method: 'POST', body: fd, headers: { 'Accept': 'application/json' } }).catch(() => {});
+          BH.toast('¡Gracias por tu opinión!', 'Tu reseña ha sido publicada.');
+          render();
+        });
+      }
+      render();
+    }
+  </script>
+</body>
+</html>
