@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Galería — BloomHair</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+  <div class="mobile-drawer" id="mobile-drawer"></div>
+
+  <main>
+    <section class="section">
+      <div class="container">
+        <div class="text-center" style="margin-bottom:56px">
+          <p class="eyebrow">GALERÍA</p>
+          <h1 class="section-title">Inspiración BloomHair</h1>
+          <p class="section-desc">Descubre transformaciones reales creadas por estilistas de todo el mundo con nuestras extensiones.</p>
+          <p style="margin-top:8px;font-size:12px;letter-spacing:.3em;color:#8B5A3C">@BLOOMHAIR — ETIQUÉTANOS PARA APARECER</p>
+        </div>
+        <div class="masonry" id="masonry"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer" id="site-footer"></footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/cart.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const imgs = BH.gallery;
+      document.getElementById('masonry').innerHTML = imgs.map((src, i) => `
+        <div class="masonry-item zoom"><img src="${src}" alt="Galería ${i+1}" loading="lazy"></div>
+      `).join('');
+    });
+  </script>
+</body>
+</html>

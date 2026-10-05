@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shop — BloomHair</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+  <div class="mobile-drawer" id="mobile-drawer"></div>
+
+  <main>
+    <section class="section">
+      <div class="container">
+        <div class="text-center" style="margin-bottom:56px">
+          <p class="eyebrow">TIENDA</p>
+          <h1 class="section-title">Hair Extensions</h1>
+          <p class="section-desc">Descubre nuestra selección de extensiones profesionales, elaboradas 100% con cabello Remy.</p>
+        </div>
+        <div class="cat-grid" id="catGrid"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer" id="site-footer"></footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/components.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      document.getElementById('catGrid').innerHTML = BH.categories.map(c => `
+        <a class="cat-card zoom" href="coleccion.html?slug=${c.slug}">
+          <div class="cat-img"><img src="${c.image}" alt="${c.name}"></div>
+          <div class="cat-body">
+            <h3 class="cat-title">${c.name}</h3>
+            <p class="cat-sub">${c.subtitle}</p>
+            <span class="cat-link">VER COLECCIÓN ›</span>
+          </div>
+        </a>
+      `).join('');
+    });
+  </script>
+</body>
+</html>

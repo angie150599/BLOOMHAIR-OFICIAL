@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pago confirmado — BloomHair</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .success-page { padding: 160px 24px 80px; background: #FBF7EE; min-height: 70vh; }
+    .success-wrap { max-width: 620px; margin: 0 auto; text-align: center; }
+    .success-icon { width: 84px; height: 84px; margin: 0 auto 32px; border-radius: 50%; background: #8B5A3C; color: #F5EFDF; display: flex; align-items: center; justify-content: center; }
+    .success-title { font-family: 'Cormorant Garamond', serif; font-size: 44px; color: #1B1210; margin-bottom: 16px; line-height: 1.1; }
+    .success-sub { color: #6a5a4a; font-size: 15px; margin-bottom: 40px; line-height: 1.6; }
+    .order-box { background: #fff; padding: 32px; margin-bottom: 32px; text-align: left; }
+    .order-box h3 { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: #1B1210; margin-bottom: 16px; }
+    .order-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; color: #3a2e24; }
+    .order-row.total { border-top: 1px solid #eadfcf; margin-top: 10px; padding-top: 14px; font-family: 'Cormorant Garamond', serif; font-size: 22px; color: #1B1210; }
+    .btn-group { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .loading { padding: 40px; color: #6a5a4a; font-style: italic; }
+    .fail { color: #a83a3a; }
+  </style>
+</head>
+<body>
+  <header class="header" id="site-header"></header>
+
+  <main class="success-page">
+    <div class="success-wrap" id="successRoot">
+      <div class="loading">Confirmando tu pago...</div>
+    </div>
+  </main>
+
+  <footer class="footer" id="site-footer"></footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/cart.js"></script>
+  <script>
+    const MAX_TRIES = 10;
+    const INTERVAL_MS = 2000;
+
+    async function poll(sessionId, tries = 0) {
+      if (tries >= MAX_TRIES) return renderTimeout();
+      try {
+        const res = await fetch(`${BH_CONFIG.BACKEND_URL}/api/payments/status/${sessionId}`);
+        if (!res.ok) throw new Error('status fetch failed');
+        const data = await res.json();
+        if (data.payment_status === 'paid') return renderSuccess(data);
+        if (data.status === 'expired' || data.status === 'failed') return renderFailed(data);
+        setTimeout(() => poll(sessionId, tries + 1), INTERVAL_MS);
+      } catch (e) {
+        setTimeout(() => poll(sessionId, tries + 1), INTERVAL_MS);
+      }
+    }
+
+    function renderSuccess(data) {
+      // Clear cart on confirmed payment
+      BHCart.clear();
+      document.getElementById('successRoot').innerHTML = `
+        <div class="success-icon">
+          <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <p class="eyebrow" style="color:#8B5A3C">PAGO CONFIRMADO</p>
+        <h1 class="success-title">¡Gracias por tu pedido!</h1>
+        <p class="success-sub">Hemos recibido tu pago correctamente. Te enviaremos un email con los detalles y el seguimiento del envío en las próximas 24 horas.</p>
+        <div class="order-box">
+          <h3>Detalles del pago</h3>
+          <div class="order-row"><span>Referencia</span><span style="font-family:monospace;font-size:12px">${data.session_id.slice(-16)}</span></div>
+          <div class="order-row total"><span>Total pagado</span><span>${data.amount?.toFixed(2)}€</span></div>
+        </div>
+        <div class="btn-group">
+          <a href="index.html" class="btn btn-primary">VOLVER AL INICIO</a>
+          <a href="shop.html" class="btn btn-outline">SEGUIR COMPRANDO</a>
+        </div>
+      `;
+    }
+
+    function renderFailed(data) {
+      document.getElementById('successRoot').innerHTML = `
+        <h1 class="success-title fail">Pago no completado</h1>
+        <p class="success-sub">Tu pago no se ha podido procesar. Vuelve al carrito para intentarlo de nuevo.</p>
+        <a href="carrito.html" class="btn btn-primary">VOLVER AL CARRITO</a>
+      `;
+    }
+
+    function renderTimeout() {
+      document.getElementById('successRoot').innerHTML = `
+        <h1 class="success-title">Estamos procesando tu pago</h1>
+        <p class="success-sub">Tu pago se está procesando. Te enviaremos un email de confirmación cuando esté listo.</p>
+        <a href="index.html" class="btn btn-primary">VOLVER AL INICIO</a>
+      `;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(location.search);
+      const sessionId = params.get('session_id');
+      if (!sessionId) {
+        document.getElementById('successRoot').innerHTML = '<p class="fail">Sesión no encontrada.</p>';
+        return;
+      }
+      poll(sessionId);
+    });
+  </script>
+</body>
+</html>

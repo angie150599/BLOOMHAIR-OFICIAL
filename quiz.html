@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Encuentra tus extensiones — BloomHair</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .quiz-wrap { max-width: 900px; margin: 0 auto; }
+    .quiz-progress { display: flex; gap: 6px; margin-bottom: 40px; }
+    .quiz-progress-bar { flex: 1; height: 3px; background: #E7DDC7; position: relative; }
+    .quiz-progress-bar.active { background: #8B5A3C; }
+    .quiz-step { display: none; animation: fadein .4s ease-out; }
+    .quiz-step.active { display: block; }
+    @keyframes fadein { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .quiz-question { font-family: 'Cormorant Garamond', serif; font-size: 48px; font-weight: 300; color: #1B1210; line-height: 1.15; margin-bottom: 12px; }
+    .quiz-hint { color: #6a5a4a; margin-bottom: 40px; font-size: 15px; }
+    .quiz-options { display: grid; gap: 16px; }
+    .quiz-options.grid-2 { grid-template-columns: 1fr 1fr; }
+    .quiz-options.grid-3 { grid-template-columns: repeat(3, 1fr); }
+    .quiz-options.grid-5 { grid-template-columns: repeat(5, 1fr); gap: 20px; }
+    .quiz-option { padding: 24px; background: #fff; border: 1px solid #E7DDC7; cursor: pointer; transition: all .3s; text-align: left; display: flex; align-items: center; gap: 16px; }
+    .quiz-option:hover { border-color: #8B5A3C; transform: translateY(-4px); box-shadow: 0 15px 30px -15px rgba(60,40,20,.25); }
+    .quiz-option.selected { background: #1B1210; color: #F5EFDF; border-color: #1B1210; }
+    .quiz-option .qopt-img { width: 60px; height: 60px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: #F5EFDF; }
+    .quiz-option .qopt-img img { width: 100%; height: 100%; object-fit: cover; }
+    .quiz-option .qopt-text { flex: 1; }
+    .quiz-option h4 { font-family: 'Cormorant Garamond', serif; font-size: 22px; margin-bottom: 4px; }
+    .quiz-option p { font-size: 13px; opacity: .8; }
+    .quiz-option-color { flex-direction: column; text-align: center; padding: 16px 8px; gap: 8px; }
+    .quiz-option-color .qopt-img { width: 72px; height: 72px; margin: 0 auto; }
+    .quiz-option-color h4 { font-size: 15px; }
+    .quiz-actions { display: flex; justify-content: space-between; margin-top: 40px; gap: 12px; }
+    .quiz-back { color: #6a5a4a; padding: 12px 24px; font-size: 12px; letter-spacing: .2em; }
+    .quiz-back:hover { color: #1B1210; }
+    /* Result */
+    .quiz-result { text-align: center; padding: 40px 0; }
+    .quiz-result-eyebrow { color: #8B5A3C; font-size: 11px; letter-spacing: .4em; margin-bottom: 16px; }
+    .quiz-result-title { font-family: 'Cormorant Garamond', serif; font-size: 56px; font-weight: 300; color: #1B1210; line-height: 1.1; margin-bottom: 12px; }
+    .quiz-result-sub { color: #6a5a4a; font-size: 18px; margin-bottom: 40px; }
+    .result-card { background: #fff; border: 1px solid #E7DDC7; padding: 40px; margin-bottom: 24px; display: grid; grid-template-columns: 180px 1fr; gap: 32px; align-items: center; }
+    .result-card-img { width: 180px; height: 180px; border-radius: 50%; overflow: hidden; background: #F5EFDF; }
+    .result-card-img img { width: 100%; height: 100%; object-fit: cover; }
+    .result-body { text-align: left; }
+    .result-body .prod-cat { font-size: 11px; letter-spacing: .3em; color: #8B5A3C; margin-bottom: 6px; }
+    .result-body h3 { font-family: 'Cormorant Garamond', serif; font-size: 36px; margin-bottom: 8px; color: #1B1210; }
+    .result-body .prod-detail { color: #6a5a4a; margin-bottom: 16px; }
+    .result-budget { display: inline-block; background: #F2EAD3; padding: 16px 24px; margin-top: 8px; }
+    .result-budget-label { font-size: 10px; letter-spacing: .28em; color: #8B5A3C; }
+    .result-budget-amount { font-family: 'Cormorant Garamond', serif; font-size: 42px; color: #1B1210; margin-top: 4px; }
+    .result-budget-detail { font-size: 12px; color: #6a5a4a; margin-top: 4px; }
+    .result-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 32px; }
+    @media (max-width: 700px) {
+      .quiz-question { font-size: 32px; }
+      .quiz-options.grid-2, .quiz-options.grid-3, .quiz-options.grid-5 { grid-template-columns: 1fr; }
+      .quiz-options.grid-5 { grid-template-columns: repeat(2, 1fr); }
+      .result-card { grid-template-columns: 1fr; text-align: center; }
+      .result-body { text-align: center; }
+      .result-card-img { margin: 0 auto; }
+      .quiz-result-title { font-size: 36px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header" id="site-header"></header>
+  <div class="mobile-drawer" id="mobile-drawer"></div>
+
+  <main>
+    <section class="section-lg" style="background:#FBF7EE">
+      <div class="quiz-wrap" style="padding:0 24px">
+        <div class="text-center" style="margin-bottom:56px">
+          <p class="eyebrow">ENCUENTRA TU EXTENSIÓN</p>
+          <h1 class="section-title">Calcula tu presupuesto</h1>
+          <p style="color:#6a5a4a;margin-top:16px;max-width:600px;margin-left:auto;margin-right:auto">
+            Responde 4 preguntas rápidas y te recomendamos la extensión perfecta con precio estimado.
+          </p>
+        </div>
+
+        <div class="quiz-progress" id="progress"></div>
+
+        <!-- STEP 1: TIPO DE EXTENSION -->
+        <div class="quiz-step active" data-step="1">
+          <h2 class="quiz-question">¿Qué tipo de extensión te llama la atención?</h2>
+          <p class="quiz-hint">Cada línea BloomHair tiene un método de aplicación distinto.</p>
+          <div class="quiz-options" id="typeOptions"></div>
+        </div>
+
+        <!-- STEP 2: GROSOR -->
+        <div class="quiz-step" data-step="2">
+          <h2 class="quiz-question">¿Cómo es tu cabello?</h2>
+          <p class="quiz-hint">Esto nos ayuda a calcular cuántos paquetes necesitarás.</p>
+          <div class="quiz-options grid-3">
+            <button class="quiz-option" data-val="fino">
+              <div class="qopt-text"><h4>Fino</h4><p>Cabello suave, poco denso — 1 paquete suele bastar.</p></div>
+            </button>
+            <button class="quiz-option" data-val="medio">
+              <div class="qopt-text"><h4>Medio</h4><p>Densidad normal — normalmente 2 paquetes.</p></div>
+            </button>
+            <button class="quiz-option" data-val="grueso">
+              <div class="qopt-text"><h4>Grueso</h4><p>Cabello denso y abundante — 3 paquetes o más.</p></div>
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 3: COLOR -->
+        <div class="quiz-step" data-step="3">
+          <h2 class="quiz-question">¿Qué color de cabello tienes?</h2>
+          <p class="quiz-hint">Elige el tono más parecido al tuyo. Podrás ajustarlo después con Amanda.</p>
+          <div class="quiz-options grid-5" id="colorOptions"></div>
+        </div>
+
+        <!-- STEP 4: LARGO -->
+        <div class="quiz-step" data-step="4">
+          <h2 class="quiz-question">¿Qué largo quieres?</h2>
+          <p class="quiz-hint">Elige la longitud que más se ajusta a lo que buscas.</p>
+          <div class="quiz-options grid-2">
+            <button class="quiz-option" data-val="50">
+              <div class="qopt-text"><h4>50 cm</h4><p>Largo medio, natural — ideal para primera vez.</p></div>
+            </button>
+            <button class="quiz-option" data-val="70">
+              <div class="qopt-text"><h4>70 cm</h4><p>Largo espectacular, efecto melena de revista.</p></div>
+            </button>
+          </div>
+        </div>
+
+        <!-- RESULT -->
+        <div class="quiz-step" data-step="5">
+          <div id="resultRoot"></div>
+        </div>
+
+        <!-- Actions -->
+        <div class="quiz-actions" id="actions">
+          <button class="quiz-back" id="backBtn" style="visibility:hidden">← ATRÁS</button>
+          <span></span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer" id="site-footer"></footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/cart.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const totalSteps = 4;
+      let current = 1;
+      const answers = { type: null, grosor: null, color: null, largo: null };
+
+      // Progress bar
+      function renderProgress() {
+        const p = document.getElementById('progress');
+        p.innerHTML = '';
+        for (let i = 1; i <= totalSteps; i++) {
+          const bar = document.createElement('div');
+          bar.className = 'quiz-progress-bar' + (i <= current ? ' active' : '');
+          p.appendChild(bar);
+        }
+      }
+
+      // Step 1: types
+      document.getElementById('typeOptions').innerHTML = BH.categories.map(c => `
+        <button class="quiz-option" data-val="${c.slug}">
+          <div class="qopt-img"><img src="${c.image}" alt="${c.name}"></div>
+          <div class="qopt-text"><h4>${c.name}</h4><p>${c.subtitle}</p></div>
+        </button>
+      `).join('');
+
+      // Step 3: colors
+      document.getElementById('colorOptions').innerHTML = BH.colors.map(c => `
+        <button class="quiz-option quiz-option-color" data-val="${c.slug}">
+          <div class="qopt-img"><img src="${c.image}" alt="${c.name}"></div>
+          <div class="qopt-text"><h4>${c.name}</h4></div>
+        </button>
+      `).join('');
+
+      // Show step
+      function showStep(n) {
+        document.querySelectorAll('.quiz-step').forEach(s => s.classList.remove('active'));
+        document.querySelector(`.quiz-step[data-step="${n}"]`).classList.add('active');
+        document.getElementById('backBtn').style.visibility = n > 1 ? 'visible' : 'hidden';
+        current = n;
+        renderProgress();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      // Selecting an option auto-advances
+      document.querySelectorAll('.quiz-option').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const step = current;
+          const val = btn.dataset.val;
+          const keys = ['type', 'grosor', 'color', 'largo'];
+          answers[keys[step - 1]] = val;
+
+          // Mark selected briefly then advance
+          btn.parentElement.querySelectorAll('.quiz-option').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+
+          setTimeout(() => {
+            if (step < totalSteps) showStep(step + 1);
+            else showResult();
+          }, 250);
+        });
+      });
+
+      document.getElementById('backBtn').addEventListener('click', () => {
+        if (current > 1) showStep(current - 1);
+      });
+
+      // Calculate + show result
+      function showResult() {
+        const category = BH.categories.find(c => c.slug === answers.type);
+        const color = BH.colors.find(c => c.slug === answers.color);
+        const size = answers.largo === '50' ? '50 cm' : '70 cm';
+        const variant = color.variants.find(v => v.size === size);
+        const packsMap = { fino: 1, medio: 2, grueso: 3 };
+        const packs = packsMap[answers.grosor] || 1;
+
+        const perPack = variant.price;
+        const total = perPack * packs;
+        const totalMax = perPack * (packs + 1); // range up to +1 pack
+
+        document.getElementById('resultRoot').innerHTML = `
+          <div class="quiz-result">
+            <p class="quiz-result-eyebrow">TU RECOMENDACIÓN</p>
+            <h2 class="quiz-result-title">Hecho a tu medida</h2>
+            <p class="quiz-result-sub">Estas son las extensiones que mejor encajan contigo:</p>
+
+            <div class="result-card">
+              <div class="result-card-img"><img src="${color.image}" alt="${color.name}"></div>
+              <div class="result-body">
+                <p class="prod-cat">${category.name.toUpperCase()}</p>
+                <h3>${color.name}</h3>
+                <p class="prod-detail">${color.description}</p>
+                <p style="font-size:14px;color:#3a2e24">
+                  <strong>Longitud:</strong> ${size} &nbsp;·&nbsp; <strong>Paquetes recomendados:</strong> ${packs}${packs < 3 ? '-' + (packs+1) : ''} (${packs * 50}-${(packs+1)*50}gr)
+                </p>
+                <div class="result-budget">
+                  <p class="result-budget-label">PRESUPUESTO ESTIMADO</p>
+                  <p class="result-budget-amount">${total}€ – ${totalMax}€</p>
+                  <p class="result-budget-detail">${perPack}€/paquete × ${packs}-${packs+1} paquetes</p>
+                </div>
+              </div>
+            </div>
+
+            <div style="background:#EDE3CD;padding:24px;text-align:left;font-size:14px;color:#3a2e24;line-height:1.6">
+              <strong>Nota:</strong> este presupuesto es orientativo. La cantidad final depende de la densidad exacta de tu cabello y el efecto deseado. Amanda te confirmará el precio exacto en una consulta rápida gratuita.
+            </div>
+
+            <div class="result-actions">
+              <a href="coleccion.html?slug=${answers.type}" class="btn btn-dark">VER ESTA COLECCIÓN</a>
+              <a href="clases.html#reservar" class="btn btn-outline">RESERVAR CONSULTA</a>
+              <button class="btn btn-outline" onclick="location.reload()">REHACER ENCUESTA</button>
+            </div>
+          </div>
+        `;
+        showStep(5);
+        document.getElementById('backBtn').style.visibility = 'hidden';
+      }
+
+      renderProgress();
+    });
+  </script>
+</body>
+</html>
